@@ -1,0 +1,19 @@
+server:
+  port: 8020
+spring:
+  application:
+    name: local-ddns
+  cloud:
+    nacos:
+      discovery:
+        server-addr: server-master:1202
+        metadata:
+          version: v1.0.0
+      config:
+        server-addr: server-master:1202
+        file-extension: yaml
+        prefix: local-ddns
+        group: DEFAULT_GROUP
+
+
+
