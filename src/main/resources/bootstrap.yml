@@ -15,5 +15,12 @@ spring:
         prefix: local-ddns
         group: DEFAULT_GROUP
 
-
+management:
+  endpoints:
+    web:
+      exposure:
+        include: 'prometheus'
+  metrics:
+    tags:
+      application: ${spring.application.name}
 

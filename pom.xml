@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.xiaobai1202</groupId>
     <artifactId>ddns</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <name>ddns</name>
     <description>ddns for aliyun domain</description>
 
@@ -15,6 +15,17 @@
         <spring-boot.version>2.3.4.RELEASE</spring-boot.version>
         <spring-cloud-alibaba.version>2.2.2.RELEASE</spring-cloud-alibaba.version>
     </properties>
+
+    <distributionManagement>
+        <repository>
+            <id>maven-releases</id>
+            <url>http://server-master:1202/nexus/repository/maven-releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>maven-snapshots</id>
+            <url>http://server-master:1202/nexus/repository/maven-snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
 
     <dependencies>
         <dependency>
@@ -62,6 +73,23 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.mweirauch</groupId>
+            <artifactId>micrometer-jvm-extras</artifactId>
+            <version>0.2.1</version>
+        </dependency>
+
     </dependencies>
 
     <dependencyManagement>
