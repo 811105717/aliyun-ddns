@@ -22,7 +22,6 @@ public class ClientConfig {
 
     @Bean
     public IAcsClient client() throws ClientException {
-        System.out.println(region + " " + accessKey + " "+ secretKey);
         IClientProfile profile = DefaultProfile.getProfile(region, accessKey, secretKey);
         DefaultProfile.addEndpoint("cn-hangzhou", "cn-hangzhou", "Domain", "domain.aliyuncs.com");
         IAcsClient client = new DefaultAcsClient(profile);

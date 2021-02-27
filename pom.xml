@@ -19,11 +19,11 @@
     <distributionManagement>
         <repository>
             <id>maven-releases</id>
-            <url>http://server-master:1202/nexus/repository/maven-releases/</url>
+            <url>https://xiaobai1202.com:8443/nexus/repository/maven-releases/</url>
         </repository>
         <snapshotRepository>
             <id>maven-snapshots</id>
-            <url>http://server-master:1202/nexus/repository/maven-snapshots/</url>
+            <url>https://xiaobai1202.com:8443/nexus/repository/maven-snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
 
