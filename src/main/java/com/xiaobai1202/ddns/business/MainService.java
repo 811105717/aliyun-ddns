@@ -43,7 +43,7 @@ public class MainService {
 
     @Async
     @Scheduled(cron = "0 0/10 * * * ?")
-    public ResponseEntity<?> updateIpDNS() throws ClientException {
+    public ResponseEntity updateIpDNS() throws ClientException {
         String localIp = this.getLocalIp();
         if (StringUtils.isEmpty(localIp)) {
             throw new RuntimeException("无法获取正确的本地IP");

@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.xiaobai1202</groupId>
     <artifactId>ddns</artifactId>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
     <name>ddns</name>
     <description>ddns for aliyun domain</description>
 
