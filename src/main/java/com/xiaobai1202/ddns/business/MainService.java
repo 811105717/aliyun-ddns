@@ -12,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -41,9 +40,8 @@ public class MainService {
         return ipAddress.getData().getIp();
     }
 
-    @Async
     @Scheduled(cron = "0 0/10 * * * ?")
-    public ResponseEntity updateIpDNS() throws ClientException {
+    public ResponseEntity<String> updateIpDNS() throws ClientException {
         String localIp = this.getLocalIp();
         if (StringUtils.isEmpty(localIp)) {
             throw new RuntimeException("无法获取正确的本地IP");
@@ -68,7 +66,7 @@ public class MainService {
                 UpdateDomainRecordResponse updateResponse = alClient.getAcsResponse(updateDomainRequest);
                 String info = "***域名解析值:[" + record.getValue() + "] 当前本地IP地址为:[" + localIp + "] 进行更新！！！！***";
                 log.info(info);
-                return new ResponseEntity<>(updateResponse, HttpStatus.OK);
+                return new ResponseEntity<>(info, HttpStatus.OK);
             }
         } else {
             return new ResponseEntity<>("未找到解析记录->不进行操作", HttpStatus.OK);

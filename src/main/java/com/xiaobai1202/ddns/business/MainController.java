@@ -19,7 +19,7 @@ public class MainController {
     }
 
     @RequestMapping("/update")
-    public ResponseEntity update() throws ClientException {
+    public ResponseEntity<String> update() throws ClientException {
         return mainService.updateIpDNS();
     }
 }
