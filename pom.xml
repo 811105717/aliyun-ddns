@@ -16,23 +16,50 @@
         <spring-cloud-alibaba.version>2.2.2.RELEASE</spring-cloud-alibaba.version>
     </properties>
 
-    <distributionManagement>
-        <repository>
-            <id>maven-releases</id>
-            <url>https://xiaobai1202.com:8443/nexus/repository/maven-releases/</url>
-        </repository>
-        <snapshotRepository>
-            <id>maven-snapshots</id>
-            <url>https://xiaobai1202.com:8443/nexus/repository/maven-snapshots/</url>
-        </snapshotRepository>
-    </distributionManagement>
+    <profiles>
+        <profile>
+            <id>xiaobai-local</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <sonar.host.url>https://xiaobai1202.com:8443/sonar/</sonar.host.url>
+                <sonar.login>b9f6f38e516a6b28d2788a53d97895dc136b2224</sonar.login>
+                <sonar.exclusions>**/generated/**,**/application-templates/**</sonar.exclusions>
+                <sonar.analysis.mode>publish</sonar.analysis.mode>
+                <sonar.projectKey>email-service</sonar.projectKey>
+                <sonar.projectName>email-service</sonar.projectName>
+            </properties>
+            <distributionManagement>
+                <snapshotRepository>
+                    <id>maven-snapshots</id>
+                    <url>https://xiaobai1202.com:8443/nexus/repository/maven-snapshots/</url>
+                </snapshotRepository>
+                <repository>
+                    <id>maven-releases</id>
+                    <url>https://xiaobai1202.com:8443/nexus/repository/maven-releases/</url>
+                </repository>
+            </distributionManagement>
+        </profile>
+    </profiles>
 
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>com.xiaobai1202</groupId>
+            <artifactId>email</artifactId>
+            <version>1.0.1</version>
+            <classifier>client</classifier>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
         <dependency>
             <groupId>com.aliyun</groupId>
             <artifactId>aliyun-java-sdk-core</artifactId>
