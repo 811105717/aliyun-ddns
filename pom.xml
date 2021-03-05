@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.xiaobai1202</groupId>
     <artifactId>ddns</artifactId>
-    <version>1.2.1</version>
+    <version>1.3.0</version>
     <name>ddns</name>
     <description>ddns for aliyun domain</description>
 
@@ -27,8 +27,9 @@
                 <sonar.login>b9f6f38e516a6b28d2788a53d97895dc136b2224</sonar.login>
                 <sonar.exclusions>**/generated/**,**/application-templates/**</sonar.exclusions>
                 <sonar.analysis.mode>publish</sonar.analysis.mode>
-                <sonar.projectKey>email-service</sonar.projectKey>
-                <sonar.projectName>email-service</sonar.projectName>
+                <sonar.projectKey>aliyun-ddns-service</sonar.projectKey>
+                <sonar.projectName>aliyun-ddns-service</sonar.projectName>
+                <sonar.projectVersion>${version}</sonar.projectVersion>
             </properties>
             <distributionManagement>
                 <snapshotRepository>
