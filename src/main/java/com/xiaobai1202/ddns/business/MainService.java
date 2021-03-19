@@ -4,7 +4,6 @@ import com.aliyuncs.IAcsClient;
 import com.aliyuncs.alidns.model.v20150109.DescribeDomainRecordsRequest;
 import com.aliyuncs.alidns.model.v20150109.DescribeDomainRecordsResponse;
 import com.aliyuncs.alidns.model.v20150109.UpdateDomainRecordRequest;
-import com.aliyuncs.alidns.model.v20150109.UpdateDomainRecordResponse;
 import com.aliyuncs.exceptions.ClientException;
 import com.xiaobai1202.ddns.config.ConfigProperties;
 import com.xiaobai1202.ddns.model.IpAddress;
@@ -52,7 +51,7 @@ public class MainService {
     }
 
     @Scheduled(cron = "0 0/10 * * * ?")
-    public ResponseEntity<String> updateIpDNS() throws ClientException {
+    public ResponseEntity<String> updateIpDNS() {
         String localIp = this.getLocalIp();
         if (StringUtils.isEmpty(localIp)) {
             throw new RuntimeException("无法获取正确的本地IP");
@@ -61,7 +60,12 @@ public class MainService {
         recordsRequest.setDomainName(properties.getDomain());
         recordsRequest.setRRKeyWord(properties.getRr());
         recordsRequest.setType(properties.getRecordType());
-        DescribeDomainRecordsResponse listResponse = alClient.getAcsResponse(recordsRequest);
+        DescribeDomainRecordsResponse listResponse = null;
+        try {
+            listResponse = alClient.getAcsResponse(recordsRequest);
+        } catch (ClientException e) {
+            log.error("call client error: " + e);
+        }
         if (listResponse.getDomainRecords().size() > 0) {
             DescribeDomainRecordsResponse.Record record = listResponse.getDomainRecords().get(0);
             if (record.getValue().equals(localIp)) {
@@ -74,7 +78,11 @@ public class MainService {
                 updateDomainRequest.setRecordId(record.getRecordId());
                 updateDomainRequest.setValue(localIp);
                 updateDomainRequest.setType(properties.getRecordType());
-                UpdateDomainRecordResponse updateResponse = alClient.getAcsResponse(updateDomainRequest);
+                try {
+                    alClient.getAcsResponse(updateDomainRequest);
+                } catch (ClientException e) {
+                    log.error("update ip dns error: " + e);
+                }
                 String info = "***域名解析值:[" + record.getValue() + "] 当前本地IP地址为:[" + localIp + "] 进行更新！！！！***";
                 log.info(info);
                 sendEmail(record.getValue(), localIp);
