@@ -8,7 +8,7 @@ spring:
       discovery:
         server-addr: 10.225.1.203:8848
         metadata:
-          version: v1.0.0
+          version: @version@
       config:
         server-addr: 10.225.1.203:8848
         file-extension: yaml
