@@ -8,7 +8,6 @@ spring:
         metadata:
           version: @version@
         namespace: ${NAMESPACE:production}
-        group: ${APPLICATION_GROUP:@version@}
       config:
         server-addr: ${CONFIG_SERVER:10.225.1.203:8848}
         file-extension: yaml

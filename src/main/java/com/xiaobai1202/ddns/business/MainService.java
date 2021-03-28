@@ -6,7 +6,6 @@ import com.aliyuncs.alidns.model.v20150109.DescribeDomainRecordsResponse;
 import com.aliyuncs.alidns.model.v20150109.UpdateDomainRecordRequest;
 import com.aliyuncs.exceptions.ClientException;
 import com.xiaobai1202.ddns.config.ConfigProperties;
-import com.xiaobai1202.ddns.model.IpAddress;
 import com.xiaobai1202.email.generated.client.template.EmailApi;
 import com.xiaobai1202.email.generated.model.EmailTo;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 @Service
@@ -42,16 +42,30 @@ public class MainService {
         this.emailService = emailService;
     }
 
-    @Value("${ddns.client.getIpURL:http://ip.taobao.com/outGetIpInfo?ip=myip&accessKey=alibaba-inc}")
+    @Value("${ddns.client.getIpURL:https://api.ip.sb/ip}")
     private String getIpURL;
 
     public String getLocalIp() {
-        IpAddress ipAddress = restTemplate.getForObject(getIpURL, IpAddress.class);
-        return ipAddress.getData().getIp();
+        String ipAddress = restTemplate.getForObject(getIpURL, String.class);
+        return ipAddress.trim().toLowerCase();
     }
 
     @Scheduled(cron = "0 0/10 * * * ?")
     public ResponseEntity<String> updateIpDNS() {
+        ResponseEntity<String> responseEntity = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        try {
+            responseEntity = getStringResponseEntity();
+        } catch (RuntimeException e) {
+            EmailTo emailTo = new EmailTo();
+            emailTo.setContent(String.format("ddns 执行发生错误！ \n %s", e.toString()));
+            emailTo.setTittle("DDNS 服务发生不可挽回错误！");
+            emailTo.setTo(Arrays.asList("811105717@qq.com"));
+            emailService.sendNewEmail("zh-CN", emailTo);
+        }
+        return responseEntity;
+    }
+
+    private ResponseEntity<String> getStringResponseEntity() {
         String localIp = this.getLocalIp();
         if (StringUtils.isEmpty(localIp)) {
             throw new RuntimeException("无法获取正确的本地IP");
@@ -91,7 +105,6 @@ public class MainService {
         } else {
             return new ResponseEntity<>("未找到解析记录->不进行操作", HttpStatus.OK);
         }
-
     }
 
     @Async
