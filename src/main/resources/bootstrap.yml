@@ -1,25 +1,19 @@
-server:
-  port: 8020
 spring:
   application:
     name: local-ddns
   cloud:
     nacos:
       discovery:
-        server-addr: 10.225.1.203:8848
+        server-addr: ${DISCOVERY_SERVER:10.225.1.203:8848}
         metadata:
           version: @version@
+        namespace: ${NAMESPACE:production}
+        group: ${APPLICATION_GROUP:@version@}
       config:
-        server-addr: 10.225.1.203:8848
+        server-addr: ${CONFIG_SERVER:10.225.1.203:8848}
         file-extension: yaml
-        prefix: local-ddns
-        group: DEFAULT_GROUP
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: 'prometheus'
-  metrics:
-    tags:
-      application: ${spring.application.name}
+        prefix: ${CONFIG_PREFIX:ddnsServer}
+        group: ${APPLICATION_GROUP:@version@}
+        namespace: ${NAMESPACE:production}
+  profiles:
+    active: default,${ACTIVE_PROFILE:ddns}
