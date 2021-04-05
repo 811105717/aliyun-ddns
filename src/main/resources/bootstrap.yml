@@ -16,3 +16,6 @@ spring:
         namespace: ${NAMESPACE:production}
   profiles:
     active: default,${ACTIVE_PROFILE:ddns}
+logging:
+  file:
+    name: ./ddns-server.log

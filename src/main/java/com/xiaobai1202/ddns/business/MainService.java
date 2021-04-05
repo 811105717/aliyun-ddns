@@ -1,5 +1,6 @@
 package com.xiaobai1202.ddns.business;
 
+import com.alibaba.nacos.common.utils.CollectionUtils;
 import com.aliyuncs.IAcsClient;
 import com.aliyuncs.alidns.model.v20150109.DescribeDomainRecordsRequest;
 import com.aliyuncs.alidns.model.v20150109.DescribeDomainRecordsResponse;
@@ -9,18 +10,29 @@ import com.xiaobai1202.ddns.config.ConfigProperties;
 import com.xiaobai1202.email.generated.client.template.EmailApi;
 import com.xiaobai1202.email.generated.model.EmailTo;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Locale;
+import java.util.Objects;
 
 @Service
 @Slf4j
@@ -55,7 +67,7 @@ public class MainService {
         ResponseEntity<String> responseEntity = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         try {
             responseEntity = getStringResponseEntity();
-        } catch (RuntimeException e) {
+        } catch (Exception e) {
             EmailTo emailTo = new EmailTo();
             emailTo.setContent(String.format("ddns 执行发生错误！ \n %s", e.toString()));
             emailTo.setTittle("DDNS 服务发生不可挽回错误！");
@@ -65,50 +77,14 @@ public class MainService {
         return responseEntity;
     }
 
-    private ResponseEntity<String> getStringResponseEntity() {
-        String localIp = this.getLocalIp();
-        if (StringUtils.isEmpty(localIp)) {
-            throw new RuntimeException("无法获取正确的本地IP");
-        }
-        DescribeDomainRecordsRequest recordsRequest = new DescribeDomainRecordsRequest();
-        recordsRequest.setDomainName(properties.getDomain());
-        recordsRequest.setRRKeyWord(properties.getRr());
-        recordsRequest.setType(properties.getRecordType());
-        DescribeDomainRecordsResponse listResponse = null;
-        try {
-            listResponse = alClient.getAcsResponse(recordsRequest);
-        } catch (ClientException e) {
-            log.error("call client error: " + e);
-        }
-        if (listResponse.getDomainRecords().size() > 0) {
-            DescribeDomainRecordsResponse.Record record = listResponse.getDomainRecords().get(0);
-            if (record.getValue().equals(localIp)) {
-                String info = "域名解析值:[" + record.getValue() + "] 当前本地IP地址为:[" + localIp + "] 不进行操作！";
-                log.warn(info);
-                return new ResponseEntity<>(info, HttpStatus.ACCEPTED);
-            } else {
-                UpdateDomainRecordRequest updateDomainRequest = new UpdateDomainRecordRequest();
-                updateDomainRequest.setRR(properties.getRr());
-                updateDomainRequest.setRecordId(record.getRecordId());
-                updateDomainRequest.setValue(localIp);
-                updateDomainRequest.setType(properties.getRecordType());
-                try {
-                    alClient.getAcsResponse(updateDomainRequest);
-                } catch (ClientException e) {
-                    log.error("update ip dns error: " + e);
-                }
-                String info = "***域名解析值:[" + record.getValue() + "] 当前本地IP地址为:[" + localIp + "] 进行更新！！！！***";
-                log.info(info);
-                sendEmail(record.getValue(), localIp);
-                return new ResponseEntity<>(info, HttpStatus.OK);
-            }
-        } else {
-            return new ResponseEntity<>("未找到解析记录->不进行操作", HttpStatus.OK);
-        }
+    @Async
+    ResponseEntity<String> getStringResponseEntity() {
+        String s = updateIpAddress();
+        return new ResponseEntity<>(s, HttpStatus.ACCEPTED);
     }
 
     @Async
-    protected void sendEmail(String oldIp, String newIp) {
+    void sendEmail(String oldIp, String newIp) {
         EmailTo emailTo = new EmailTo();
         StringBuilder sb = new StringBuilder();
         sb.append("您好！\n ")
@@ -128,6 +104,76 @@ public class MainService {
         emailTo.setBcc(Collections.singletonList("xiaobai@xiaobai1202.com"));
         emailTo.setTittle("AliYun DDNS Service 地址变更通知！");
         emailService.sendNewEmail("zh-CN", emailTo);
+    }
+
+    String updateIpAddress() {
+        String currentIpAddress = null;
+        try {
+            String ipAddress = restTemplate.getForObject(getIpURL, String.class);
+            if (StringUtils.isNotEmpty(ipAddress)) {
+                currentIpAddress = ipAddress.trim().toLowerCase(Locale.ROOT);
+            }
+        } catch (RestClientException exception) {
+            log.error("error occurs when get current ip address, the message -> {}", exception.getMessage());
+            return "error occurs when get current ip address";
+        }
+
+        DescribeDomainRecordsRequest recordsRequest = new DescribeDomainRecordsRequest();
+        recordsRequest.setDomainName(properties.getDomain());
+        recordsRequest.setRRKeyWord(properties.getRr());
+        recordsRequest.setType(properties.getRecordType());
+        DescribeDomainRecordsResponse listResponse = null;
+        try {
+            listResponse = alClient.getAcsResponse(recordsRequest);
+        } catch (ClientException e) {
+            log.error("error occurs when call alibaba ddns service => {} " + e.getMessage());
+            return "error occurs when call alibaba ddns service";
+        }
+
+        if (Objects.nonNull(listResponse) && CollectionUtils.isNotEmpty(listResponse.getDomainRecords())) {
+            DescribeDomainRecordsResponse.Record record = listResponse.getDomainRecords().get(0);
+            if (record.getValue().equals(currentIpAddress)) {
+                String info = "aliyun record value:[" + record.getValue() + "] ,current local record value:[" + currentIpAddress + "] " +
+                        ", no update action.";
+                log.warn(info);
+                return info;
+            } else {
+                UpdateDomainRecordRequest updateDomainRequest = new UpdateDomainRecordRequest();
+                updateDomainRequest.setRR(properties.getRr());
+                updateDomainRequest.setRecordId(record.getRecordId());
+                updateDomainRequest.setValue(currentIpAddress);
+                updateDomainRequest.setType(properties.getRecordType());
+                try {
+                    alClient.getAcsResponse(updateDomainRequest);
+                    String info = "***aliyun record value:[" + record.getValue() + "] current local resolve value:["
+                            + currentIpAddress + "] do update action!！！！！***";
+                    log.info(info);
+                    sendEmail(record.getValue(), currentIpAddress);
+                    return info;
+                } catch (ClientException e) {
+                    log.error("error occurs when call alibaba ddns service: " + e);
+                    return "error occurs when call alibaba ddns service";
+                }
+            }
+        } else {
+            return "can not found target record! does not change.";
+        }
+    }
+
+    Resource getLogs(HttpHeaders httpHeaders) throws IOException {
+        httpHeaders.setContentType(MediaType.TEXT_PLAIN);
+        httpHeaders.setAcceptCharset(Collections.singletonList(StandardCharsets.UTF_8));
+        httpHeaders.setContentLanguage(Locale.SIMPLIFIED_CHINESE);
+        File file = new File("./ddns-server.log");
+        if (file.exists()) {
+            Resource resource = new FileSystemResource(file);
+            httpHeaders.setContentLength(resource.contentLength());
+            return resource;
+        } else {
+            Resource resource = new ByteArrayResource("can not found log file!".getBytes());
+            httpHeaders.setContentLength(resource.contentLength());
+            return resource;
+        }
     }
 
 }
