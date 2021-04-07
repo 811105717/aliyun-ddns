@@ -18,4 +18,4 @@ spring:
     active: default,${ACTIVE_PROFILE:ddns}
 logging:
   file:
-    name: ./ddns-server.log
+    name: ./ip-refresh.log

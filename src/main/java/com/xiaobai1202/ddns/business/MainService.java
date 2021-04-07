@@ -164,7 +164,7 @@ public class MainService {
         httpHeaders.setContentType(MediaType.TEXT_PLAIN);
         httpHeaders.setAcceptCharset(Collections.singletonList(StandardCharsets.UTF_8));
         httpHeaders.setContentLanguage(Locale.SIMPLIFIED_CHINESE);
-        File file = new File("./ddns-server.log");
+        File file = new File("./ip-refresh.log");
         if (file.exists()) {
             Resource resource = new FileSystemResource(file);
             httpHeaders.setContentLength(resource.contentLength());
