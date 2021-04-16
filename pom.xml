@@ -9,7 +9,7 @@
     </parent>
     <groupId>com.xiaobai1202</groupId>
     <artifactId>ddns</artifactId>
-    <version>1.4.0</version>
+    <version>1.4.1</version>
     <name>ddns</name>
     <description>ddns for aliyun domain</description>
 

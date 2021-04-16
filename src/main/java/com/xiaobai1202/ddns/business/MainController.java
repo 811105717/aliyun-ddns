@@ -1,6 +1,5 @@
 package com.xiaobai1202.ddns.business;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -11,11 +10,17 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 
+/**
+ * @author xiaobai
+ */
 @RestController
 public class MainController {
 
-    @Autowired
     private MainService mainService;
+
+    public MainController(MainService mainService) {
+        this.mainService = mainService;
+    }
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public ResponseEntity<String> index() {
