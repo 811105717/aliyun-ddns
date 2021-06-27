@@ -1,0 +1,32 @@
+
+spring:
+  application:
+    name: local-ddns
+  freemarker:
+    allow-request-override: false
+    allow-session-override: false
+    cache: false
+    charset: UTF-8
+    check-template-location: true
+    content-type: text/html
+    enabled: true
+    expose-request-attributes: true
+    expose-session-attributes: true
+    expose-spring-macro-helpers: true
+    prefer-file-system-access: true
+    suffix: .ftl
+    template-loader-path: classpath:/templates
+    settings:
+      template_update_delay: 0
+      default_encoding: UTF-8
+      classic_compatible: true
+logging:
+  file:
+    name: ./ip-refresh.log
+  level:
+    com.alibaba.nacos: warn
+    com.xiaobai1202: info
+server:
+  port: ${DDNS_SERVER_PORT:8080}
+  servlet:
+    context-path: ${DDNS_SERVER_CONTEXT:}
