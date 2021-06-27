@@ -24,7 +24,7 @@
             </activation>
             <properties>
                 <sonar.host.url>https://xiaobai1202.com:8443/sonar/</sonar.host.url>
-                <sonar.login>b9f6f38e516a6b28d2788a53d97895dc136b2224</sonar.login>
+                <sonar.login>d0beb48ceae810b9c27925e39aac324e46f74800</sonar.login>
                 <sonar.exclusions>**/generated/**,**/application-templates/**</sonar.exclusions>
                 <sonar.analysis.mode>publish</sonar.analysis.mode>
                 <sonar.projectKey>aliyun-ddns-service</sonar.projectKey>
